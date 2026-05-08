@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  mini-qr:
+    image: ghcr.io/lyqht/mini-qr:latest
+    container_name: mini-qr
+    restart: unless-stopped
+    ports:
+      - "3018:8080"
+    environment:
+      - TZ=${TZ}
