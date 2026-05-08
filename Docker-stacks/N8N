@@ -1,0 +1,62 @@
+services:
+  db:
+    image: postgres:17
+    container_name: n8n-db
+    hostname: n8n-db
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "${DB_NAME}", "-U", "${DB_USERNAME}"]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    volumes:
+      - ./db:/var/lib/postgresql/data:rw
+    environment:
+      TZ: ${TZ}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    restart: on-failure:5
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 5678 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    hostname: n8n
+    user: 0:0
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 5678:5678
+    volumes:
+      - ./data:/root/.n8n:rw
+      - ./files:/files:rw
+    environment:
+      N8N_HOST: ${N8N_HOST}
+      WEBHOOK_URL: ${WEBHOOK_URL}
+      N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL}
+      GENERIC_TIMEZONE: ${TZ}
+      TZ: ${TZ}
+      N8N_PORT: 5678
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      N8N_PROTOCOL: https
+      NODE_ENV: production
+      N8N_RUNNERS_ENABLED: true
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: true
+      N8N_SECURE_COOKIE: true
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_DATABASE: ${DB_NAME}
+      DB_POSTGRESDB_HOST: n8n-db
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_USER: ${DB_USERNAME}
+      DB_POSTGRESDB_PASSWORD: ${DB_PASSWORD}
+    restart: on-failure:5
+    depends_on:
+      db:
+        condition: service_healthy
