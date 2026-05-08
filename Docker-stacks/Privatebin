@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  privatebin:
+    image: privatebin/nginx-fpm-alpine:latest
+    container_name: privatebin
+    restart: unless-stopped
+    ports:
+      - "8090:8080"
+    environment:
+      - TZ=${TZ}
+      - PHP_TZ=${TZ}
+    volumes:
+      - ./data:/srv/data
+    networks:
+      - security-net
+
+networks:
+  security-net:
+    external: true
