@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  vikunja:
+    image: vikunja/vikunja:latest
+    container_name: vikunja
+    restart: unless-stopped
+    environment:
+      VIKUNJA_SERVICE_SECRET: ${VIKUNJA_SECRET}
+      VIKUNJA_SERVICE_PUBLICURL: ${APP_URL}
+      VIKUNJA_SERVICE_CORS_ENABLE: "false"
+      VIKUNJA_DATABASE_TYPE: sqlite
+    ports:
+      - "3456:3456"
+    volumes:
+      - ./files:/app/vikunja/files
+      - ./db:/db
+    networks:
+      - vikunja_network
+
+networks:
+  vikunja_network:
+    driver: bridge
