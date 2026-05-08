@@ -1,0 +1,39 @@
+services:
+  kimai:
+    image: kimai/kimai2:apache
+    container_name: kimai
+    environment:
+      - APP_ENV=prod
+      - TRUSTED_HOSTS=${TRUSTED_HOSTS}
+      - ADMINMAIL=${ADMIN_EMAIL}
+      - ADMINPASS=${ADMIN_PASSWORD}
+      - DATABASE_URL=mysql://${DB_USERNAME}:${DB_PASSWORD}@kimai_db/${DB_NAME}
+    volumes:
+      - ./data:/opt/kimai/var/data
+      - ./plugins:/opt/kimai/var/plugins
+      - ./favicon.ico:/opt/kimai/public/favicon.ico
+      - ./favicon-32x32.png:/opt/kimai/public/favicon-32x32.png
+      - ./favicon-16x16.png:/opt/kimai/public/favicon-16x16.png
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f ${APP_URL} || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      - kimai_db
+    restart: unless-stopped
+
+  kimai_db:
+    image: mysql:8
+    container_name: kimai_db
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    volumes:
+      - ./mysql:/var/lib/mysql
+    restart: unless-stopped
