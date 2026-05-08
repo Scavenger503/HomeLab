@@ -131,11 +131,3 @@ homelab-docker-stacks/
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=flat&logo=cloudflare&logoColor=white)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat&logo=linux&logoColor=black)
 ![Wazuh](https://img.shields.io/badge/Wazuh-SIEM-blue?style=flat)
-
----
-
-## 👤 Author
-
-**World of Hackers LLC**
-- 🌐 [worldofhackers.io](https://worldofhackers.io)
-- 📚 [kb.worldofhackers.io](https://kb.worldofhackers.io)
