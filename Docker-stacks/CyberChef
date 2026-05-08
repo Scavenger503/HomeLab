@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  cyberchef:
+    image: mpepping/cyberchef:latest
+    container_name: cyberchef
+    ports:
+      - "8010:8000"
+    networks:
+      - security-net
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+networks:
+  security-net:
+    external: true
