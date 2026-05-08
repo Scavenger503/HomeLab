@@ -1,0 +1,22 @@
+services:
+  pihole:
+    image: pihole/pihole
+    container_name: pihole
+    network_mode: host
+    security_opt:
+      - no-new-privileges:false
+    restart: on-failure:5
+    volumes:
+      - ./dnsmasq.d:/etc/dnsmasq.d:rw
+      - ./pihole:/etc/pihole:rw
+    environment:
+      FTLCONF_webserver_api_password: ${PIHOLE_PASSWORD}
+      FTLCONF_webserver_port: 8080
+      FTLCONF_dns_listeningMode: all
+      TZ: ${TZ}
+      DNSMASQ_USER: pihole
+      PIHOLE_UID: 1026
+      PIHOLE_GID: 100
+    cap_add:
+      - SYS_TIME
+      - SYS_NICE
