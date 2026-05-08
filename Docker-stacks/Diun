@@ -1,0 +1,38 @@
+services:
+  diun:
+    image: crazymax/diun:latest
+    container_name: diun
+    restart: unless-stopped
+    command: serve
+    volumes:
+      - ./data:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - TZ=${TZ}
+      - LOG_LEVEL=info
+      - LOG_JSON=false
+
+      # Watch settings
+      - DIUN_WATCH_WORKERS=20
+      - DIUN_WATCH_SCHEDULE=0 */6 * * *
+      - DIUN_WATCH_JITTER=30s
+
+      # Docker provider
+      - DIUN_PROVIDERS_DOCKER=true
+      - DIUN_PROVIDERS_DOCKER_WATCHBYDEFAULT=true
+
+      # Email notifications
+      - DIUN_NOTIF_MAIL_HOST=${MAIL_HOST}
+      - DIUN_NOTIF_MAIL_PORT=${MAIL_PORT}
+      - DIUN_NOTIF_MAIL_SSL=false
+      - DIUN_NOTIF_MAIL_INSECURESKIPVERIFY=false
+      - DIUN_NOTIF_MAIL_USERNAME=${MAIL_USERNAME}
+      - DIUN_NOTIF_MAIL_PASSWORD=${MAIL_PASSWORD}
+      - DIUN_NOTIF_MAIL_FROM=${MAIL_FROM}
+      - DIUN_NOTIF_MAIL_TO=${MAIL_TO}
+    networks:
+      - security-net
+
+networks:
+  security-net:
+    external: true
