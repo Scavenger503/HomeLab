@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  stirling-pdf:
+    image: frooodle/s-pdf:latest
+    container_name: stirling-pdf
+    restart: unless-stopped
+    ports:
+      - "8899:8080"
+    volumes:
+      - ./config:/configs
+      - ./customFiles:/customFiles
+    environment:
+      TZ: ${TZ}
