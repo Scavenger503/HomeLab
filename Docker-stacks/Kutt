@@ -1,0 +1,82 @@
+version: '3.8'
+services:
+  kutt-redis:
+    image: redis:7-alpine
+    container_name: kutt-redis
+    restart: unless-stopped
+    volumes:
+      - ./redis:/data
+    networks:
+      - security-net
+
+  kutt-postgres:
+    image: postgres:16-alpine
+    container_name: kutt-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    networks:
+      - security-net
+
+  kutt:
+    image: kutt/kutt:latest
+    container_name: kutt
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # App settings
+      NODE_ENV: production
+      SITE_NAME: ${SITE_NAME}
+      DEFAULT_DOMAIN: ${DEFAULT_DOMAIN}
+
+      # Database
+      DB_HOST: kutt-postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      # Redis
+      REDIS_HOST: kutt-redis
+      REDIS_PORT: 6379
+
+      # Security
+      JWT_SECRET: ${JWT_SECRET}
+      SESSION_SECRET: ${SESSION_SECRET}
+
+      # Admin
+      ADMIN_EMAILS: ${ADMIN_EMAILS}
+
+      # Public settings
+      DISALLOW_REGISTRATION: "false"
+      DISALLOW_ANONYMOUS_LINKS: "false"
+
+      # Mail settings
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_SECURE: "false"
+      MAIL_USER: ${MAIL_USERNAME}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+
+      # reCAPTCHA
+      RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY}
+      RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY}
+
+      # Custom domain
+      CUSTOM_DOMAIN_USE_HTTPS: "false"
+
+    depends_on:
+      - kutt-postgres
+      - kutt-redis
+    networks:
+      - security-net
+
+networks:
+  security-net:
+    external: true
