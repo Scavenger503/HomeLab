@@ -1,0 +1,13 @@
+services:
+  gatus:
+    image: twinproduction/gatus:latest
+    container_name: gatus
+    ports:
+      - 8081:8080
+    volumes:
+      - ./config:/config
+    dns:
+      - 1.1.1.1  # Cloudflare DNS
+      - 8.8.8.8  # Google DNS
+      - 8.8.4.4  # Google 2nd DNS
+    restart: unless-stopped
