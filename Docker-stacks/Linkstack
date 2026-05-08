@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  linkstack-personal:
+    image: linkstackorg/linkstack:latest
+    container_name: linkstack-personal
+    restart: unless-stopped
+    user: "0:0"
+    ports:
+      - "8097:80"
+    environment:
+      - SERVER_ADMIN=${SERVER_ADMIN}
+      - HTTP_SERVER_NAME=${HTTP_SERVER_NAME}
+      - HTTPS_SERVER_NAME=${HTTPS_SERVER_NAME}
+      - TZ=${TZ}
+      - PHP_MEMORY_LIMIT=512M
+      - UPLOAD_MAX_FILESIZE=8M
+    volumes:
+      - ./data:/htdocs
+    networks:
+      - security-net
+
+networks:
+  security-net:
+    external: true
