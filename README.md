@@ -8,8 +8,8 @@ A production-grade, self-hosted infrastructure built on Docker and managed via P
 
 | Host | Role | IP |
 |------|------|----|
-| Lenovo M710q | Primary Docker host (always-on) | 192.168.1.213 |
-| Lenovo M715q | DevOps & Security machine | 192.168.1.222 |
+| Lenovo M710q | Primary Docker host (always-on) | Static |
+| Lenovo M715q | DevOps & Security machine | Static |
 | Synology DS923+ | NAS / backup target | Static |
 | Raspberry Pi 5 | Primary DNS (AdGuard Home) | Static |
 | Raspberry Pi 3B | Secondary DNS (AdGuard Home) | Static |
