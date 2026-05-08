@@ -1,0 +1,69 @@
+version: '3.8'
+services:
+  outline_postgres:
+    image: postgres:14-alpine
+    container_name: outline_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    networks:
+      - security-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  outline_redis:
+    image: redis:7-alpine
+    container_name: outline_redis
+    restart: unless-stopped
+    volumes:
+      - ./redis:/data
+    networks:
+      - security-net
+
+  outline:
+    image: outlinewiki/outline:latest
+    container_name: outline
+    restart: unless-stopped
+    ports:
+      - "3100:3000"
+    depends_on:
+      outline_postgres:
+        condition: service_healthy
+      outline_redis:
+        condition: service_started
+    environment:
+      - NODE_ENV=production
+      - SECRET_KEY=${SECRET_KEY}
+      - UTILS_SECRET=${UTILS_SECRET}
+      - DATABASE_URL=postgres://${DB_USERNAME}:${DB_PASSWORD}@outline_postgres:5432/${DB_NAME}
+      - PGSSLMODE=disable
+      - REDIS_URL=redis://outline_redis:6379
+      - URL=${APP_URL}
+      - PORT=3000
+      - FILE_STORAGE=local
+      - FILE_STORAGE_LOCAL_ROOT_DIR=/var/lib/outline/data
+      - FILE_STORAGE_UPLOAD_MAX_SIZE=26214400
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
+      - SMTP_REPLY_EMAIL=${SMTP_REPLY_EMAIL}
+      - SMTP_TLS_CIPHERS=TLS
+      - SMTP_SECURE=false
+    volumes:
+      - ./data:/var/lib/outline/data
+    networks:
+      - security-net
+
+networks:
+  security-net:
+    external: true
+    name: security-net
