@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  ghost_podcast:
+    image: ghost:latest
+    container_name: ghost_podcast
+    restart: unless-stopped
+    ports:
+      - "8075:2368"
+    environment:
+      # Site configuration
+      - url=${SITE_URL}
+      - database__client=mysql
+      - database__connection__host=ghost_podcast_db
+      - database__connection__user=${DB_USERNAME}
+      - database__connection__password=${DB_PASSWORD}
+      - database__connection__database=${DB_NAME}
+      - NODE_ENV=production
+
+      # Email configuration
+      - mail__transport=SMTP
+      - mail__options__service=${MAIL_SERVICE}
+      - mail__options__host=${MAIL_HOST}
+      - mail__options__port=${MAIL_PORT}
+      - mail__options__secure=false
+      - mail__options__requireTLS=true
+      - mail__options__auth__user=${MAIL_USERNAME}
+      - mail__options__auth__pass=${MAIL_PASSWORD}
+      - mail__from=${MAIL_FROM}
+    volumes:
+      - ./content:/var/lib/ghost/content
+    depends_on:
+      - ghost_podcast_db
+    networks:
+      - ghost_podcast_network
+
+  ghost_podcast_db:
+    image: mysql:8
+    container_name: ghost_podcast_db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./db:/var/lib/mysql
+    networks:
+      - ghost_podcast_network
+
+networks:
+  ghost_podcast_network:
+    driver: bridge
