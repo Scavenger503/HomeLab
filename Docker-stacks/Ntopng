@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  ntopng:
+    image: ntop/ntopng:latest
+    container_name: ntopng
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./data:/var/lib/ntopng
+      - ./config:/etc/ntopng
+      - ./custom_httpdocs/login.html:/usr/share/ntopng/httpdocs/login.html
+    command: >
+      --interface ${NETWORK_INTERFACE}
+      --http-port 3011
+      --data-dir /var/lib/ntopng
+      --disable-login 0
