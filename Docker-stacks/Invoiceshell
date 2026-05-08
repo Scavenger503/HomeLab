@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:17
+    container_name: invoiceshelf-db
+    hostname: invoiceshelf-db
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "${DB_NAME}", "-U", "${DB_USERNAME}"]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    volumes:
+      - ./db:/var/lib/postgresql/data:rw
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    restart: on-failure:5
+
+  invoiceshelf:
+    image: tompostler/invoiceshelf
+    container_name: invoiceshelf
+    ports:
+      - 9053:80
+    volumes:
+      - ./data:/data:rw
+      - ./conf:/conf:rw
+    environment:
+      PHP_TZ: ${TZ}
+      TIMEZONE: ${TZ}
+      PUID: 1026
+      PGID: 100
+      APP_NAME: ${APP_NAME}
+      APP_KEY: ${APP_KEY}
+      APP_ENV: local
+      APP_DEBUG: true
+      APP_URL: ${APP_URL}
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PASSWORD_FILE: rootpass
+      CACHE_STORE: file
+      SESSION_DRIVER: file
+      SESSION_LIFETIME: 240
+      SESSION_ENCRYPT: false
+      SESSION_PATH: /
+      SESSION_DOMAIN: ${SESSION_DOMAIN}
+      SANCTUM_STATEFUL_DOMAINS: ${SESSION_DOMAIN}
+      STARTUP_DELAY: 5
+      TRUSTED_PROXIES: "*"
+    restart: on-failure:5
+    depends_on:
+      - db
