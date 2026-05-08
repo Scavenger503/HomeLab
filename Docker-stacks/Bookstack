@@ -1,0 +1,55 @@
+name: bookstack
+services:
+  bookstack:
+    image: solidnerd/bookstack:latest
+    container_name: bookstack
+    restart: unless-stopped
+    networks:
+      - bookstack
+    ports:
+      - "6875:8080"
+    environment:
+      APP_URL: ${APP_URL}
+      DB_HOST: bookstack-db:3306
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_DEFAULT_DARK_MODE: "true"
+      ALLOW_PUBLIC_ACCESS: "true"
+      LOG_FAILED_LOGIN: "true"
+      SESSION_LIFETIME: "120"
+      APP_KEY: ${APP_KEY}
+      MAIL_DRIVER: smtp
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_ENCRYPTION: tls
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+    volumes:
+      - ./config:/config:rw
+      - ./uploads:/var/www/bookstack/public/uploads:rw
+      - ./storage-uploads:/var/www/bookstack/storage:rw
+    depends_on:
+      - bookstack-db
+
+  bookstack-db:
+    image: mariadb:11
+    container_name: bookstack-db
+    restart: unless-stopped
+    networks:
+      - bookstack
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./db:/var/lib/mysql:rw
+      - ./db-conf:/etc/mysql/conf.d:rw
+      - ./config:/config:rw
+
+networks:
+  bookstack:
+    name: bookstack
