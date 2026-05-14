@@ -1,131 +1,270 @@
-# 🛡️ Wazuh + N8N Security Alerting Pipeline
+# Wazuh → N8N → Claude → Telegram Alert Pipeline
 
-An automated security alerting and orchestration pipeline built on top of Wazuh SIEM and N8N workflow automation. This project transforms raw SIEM alerts into intelligent, actionable notifications with multi-channel delivery and escalation logic.
-
-> ⚠️ **Status: In Progress** — Wazuh SIEM and N8N are fully deployed with agents reporting across the homelab fleet. The custom Python integration and N8N workflow are built and configured. End-to-end alert delivery is pending resolution of a Cloudflare WAF issue blocking webhook POSTs from the Wazuh Manager to N8N. Planned fix is routing Wazuh directly to N8N's internal LAN address, bypassing the WAF entirely.
+A security alerting pipeline that takes Wazuh SIEM alerts, enriches them with Claude AI triage analysis, and delivers formatted SOC-style notifications to Telegram.
 
 ---
 
-## 📐 Architecture Overview
+## Architecture
 
 ```
-Wazuh SIEM
+Wazuh SIEM (alert generation)
     │
-    │  (Custom Python Integration)
+    │  HTTP POST (internal LAN)
     ▼
-N8N Webhook
+N8N Webhook (alert intake)
     │
-    ├──► Alert Triage & Enrichment (Claude API)
+    ▼
+IF node (level ≥ 7 filter)
     │
-    ├──► Telegram Notification
+    ▼
+HTTP Request (Claude API triage)
     │
-    └──► Twilio Voice Escalation (Critical/Unacknowledged)
+    ▼
+Telegram (Luna AI — formatted alert delivery)
 ```
 
 ---
 
-## 🧩 Components
+## Prerequisites
 
-### 🔍 Wazuh SIEM
-- Full Wazuh stack (Manager, Indexer, Dashboard) deployed via Docker Compose
-- Agents installed across the homelab fleet:
-  - Primary Docker host
-  - Proxmox nodes
-  - Fedora desktop
-  - Raspberry Pi DNS nodes
-  - NAS (via syslog)
-- Real-time threat detection, log aggregation, and compliance monitoring
-
-### ⚙️ Custom Python Integration
-- Wazuh custom integration script intercepts alerts at the manager level
-- Filters alerts by severity level before forwarding
-- POSTs structured alert payload to N8N webhook endpoint
-- Runs natively on the Wazuh Manager container
-
-### 🔄 N8N Workflow Automation
-- Receives alert webhook from Wazuh
-- Parses and enriches alert data
-- Routes alerts based on severity level:
-  - **Low/Medium** → Formatted Telegram notification
-  - **High/Critical** → Telegram notification + Twilio voice escalation if unacknowledged
-- Claude API integration for natural language alert summarization and triage recommendations
-
-### 📲 Notification Channels
-- **Telegram** — Formatted alert messages with severity, rule description, affected host, and timestamp
-- **Twilio** — Automated voice call escalation for critical alerts that go unacknowledged
+- Wazuh SIEM deployed and running with at least one active agent
+- N8N instance running and accessible on the local network
+- Anthropic API key (console.anthropic.com)
+- Telegram bot token and chat/group ID
+- Both Wazuh and N8N on the same local network or reachable via LAN IP
 
 ---
 
-## 🔐 Security Practices
+## 1. Create the N8N Workflow
 
-- All credentials managed via `.env` files — never hardcoded
-- Wazuh Manager isolated on dedicated security machine
-- Webhook endpoint protected behind Cloudflare Tunnel
-- Alert forwarding uses internal LAN routing to avoid WAF interference
+In N8N, create a new workflow named `Wazuh Security` and add the following nodes in order.
 
----
+### Node 1 — Webhook (Trigger)
 
-## 📁 Repository Structure
+- **Node type:** Webhook
+- **HTTP Method:** POST
+- **Path:** `wazuh-alerts`
+- **Authentication:** None
+- **Respond:** Immediately
 
+Note the **Production URL** — it will be in the format:
 ```
-wazuh-n8n-security-pipeline/
-├── wazuh/
-│   ├── docker-compose.yml
-│   └── .env.example
-├── n8n/
-│   ├── docker-compose.yml
-│   └── .env.example
-├── integration/
-│   └── custom-n8n.py        # Wazuh custom integration script
-├── workflows/
-│   └── wazuh-alert-workflow.json  # N8N workflow export
-└── README.md
+http://N8N-HOST-IP:5678/webhook/wazuh-alerts
 ```
 
+This is the URL you will configure in Wazuh. Do not use the Test URL.
+
 ---
 
-## 🚀 Deployment Overview
+### Node 2 — IF (Alert Level Filter)
 
-### 1. Deploy Wazuh Stack
+Filters out low-level noise. Only alerts at level 7 or above are processed.
+
+- **Node type:** IF
+- **Condition:**
+  - Value 1: `{{ $json.body.rule.level }}`
+  - Operator: `is greater than or equal to`
+  - Value 2: `7`
+- **Convert types where required:** Enabled
+
+Alerts below level 7 exit via the False branch and are discarded. Connect the True branch to the next node.
+
+**Level reference:**
+
+| Level | Meaning |
+|---|---|
+| 3 | System notifications |
+| 5 | User-generated errors |
+| 7 | Attack attempts — recommended minimum |
+| 10 | Multiple attack attempts |
+| 12 | High importance events |
+| 15 | Severe attack |
+
+---
+
+### Node 3 — HTTP Request (Claude API Triage)
+
+Sends the alert data to Claude for analysis and returns a structured triage summary.
+
+- **Node type:** HTTP Request
+- **Method:** POST
+- **URL:** `https://api.anthropic.com/v1/messages`
+- **Authentication:** None
+- **Send Headers:** Enabled
+
+**Headers:**
+
+| Name | Value |
+|---|---|
+| `x-api-key` | Your Anthropic API key |
+| `anthropic-version` | `2023-06-01` |
+| `content-type` | `application/json` |
+
+- **Send Body:** Enabled
+- **Body Content Type:** JSON
+- **Specify Body:** Using JSON
+
+**JSON Body:**
+
+```json
+{
+  "model": "claude-sonnet-4-6",
+  "max_tokens": 1024,
+  "messages": [
+    {
+      "role": "user",
+      "content": "You are a security analyst. Analyze this Wazuh security alert and provide a brief triage summary in 2-3 sentences. Include severity assessment and recommended action.\n\nAlert:\nRule: {{ $('If').item.json.body.rule.description }}\nLevel: {{ $('If').item.json.body.rule.level }}\nAgent: {{ $('If').item.json.body.agent.name }}\nTimestamp: {{ $('If').item.json.body.timestamp }}"
+    }
+  ]
+}
+```
+
+---
+
+### Node 4 — Send a Text Message (Telegram)
+
+Delivers the formatted alert and Claude triage to Telegram.
+
+- **Node type:** Telegram → Send a text message
+- **Credential:** Telegram bot token
+- **Chat ID:** Your Telegram group or chat ID
+- **Text:**
+
+```
+🚨 *Wazuh Security Alert*
+
+*Agent:* {{ $('If').item.json.body.agent.name }}
+*Rule:* {{ $('If').item.json.body.rule.description }}
+*Level:* {{ $('If').item.json.body.rule.level }}
+*Time:* {{ $('If').item.json.body.timestamp }}
+
+*🤖 Luna Triage:*
+{{ $json.content[0].text }}
+```
+
+- **Additional Fields → Parse Mode:** `Markdown (Legacy)`
+
+---
+
+## 2. Publish and Activate the Workflow
+
+After building all four nodes:
+
+1. Click **Publish** in the top bar and name the version (e.g. `Initial Release`)
+2. Navigate to **Overview → Workflows**
+3. Confirm the workflow shows **Published** status with a green indicator
+
+The workflow is now active and listening on the production webhook URL.
+
+---
+
+## 3. Configure Wazuh Integration
+
+On the Wazuh host, edit the manager configuration inside the container:
+
 ```bash
-cd wazuh
-cp .env.example .env
-# Fill in your values
-docker compose up -d
+docker exec -it single-node-wazuh.manager-1 bash
 ```
 
-### 2. Deploy N8N
+Since standard text editors are not available inside the container, use `sed` to update the webhook URL:
+
 ```bash
-cd n8n
-cp .env.example .env
-# Fill in your values
-docker compose up -d
+sed -i 's|EXISTING-HOOK-URL|http://N8N-HOST-IP:5678/webhook/wazuh-alerts|g' /var/ossec/etc/ossec.conf
 ```
 
-### 3. Install Custom Integration
-Copy `integration/custom-n8n.py` to the Wazuh Manager container:
+Verify the change:
+
 ```bash
-docker cp custom-n8n.py wazuh-manager:/var/ossec/integrations/custom-n8n
-docker exec wazuh-manager chmod +x /var/ossec/integrations/custom-n8n
+grep "hook_url" /var/ossec/etc/ossec.conf
 ```
 
-### 4. Configure Wazuh
-Add the following to your `ossec.conf`:
+Expected output:
+```xml
+<hook_url>http://N8N-HOST-IP:5678/webhook/wazuh-alerts</hook_url>
+```
+
+Exit the container and restart the manager:
+
+```bash
+exit
+docker restart single-node-wazuh.manager-1
+```
+
+If the integration block does not exist yet, add it manually. Exit the container and copy the config file out, edit it, then copy it back:
+
+```bash
+docker cp single-node-wazuh.manager-1:/var/ossec/etc/ossec.conf ./ossec.conf
+nano ossec.conf
+```
+
+Add inside the `<ossec_config>` block:
+
 ```xml
 <integration>
   <name>custom-n8n</name>
-  <hook_url>http://your-n8n-host:5678/webhook/wazuh-alerts</hook_url>
-  <level>3</level>
+  <hook_url>http://N8N-HOST-IP:5678/webhook/wazuh-alerts</hook_url>
+  <level>7</level>
   <alert_format>json</alert_format>
 </integration>
 ```
 
-### 5. Import N8N Workflow
-Import `workflows/wazuh-alert-workflow.json` into your N8N instance and configure your Telegram and Twilio credentials.
+Copy it back:
+
+```bash
+docker cp ./ossec.conf single-node-wazuh.manager-1:/var/ossec/etc/ossec.conf
+docker restart single-node-wazuh.manager-1
+```
 
 ---
 
-## 🛠️ Stack
+## 4. Verify the Pipeline
+
+**Step 1 — Test N8N webhook reachability from Wazuh host:**
+
+```bash
+curl -X POST http://N8N-HOST-IP:5678/webhook/wazuh-alerts \
+  -H "Content-Type: application/json" \
+  -d '{"rule":{"level":7,"description":"Test alert"},"agent":{"name":"test-agent"},"timestamp":"2026-01-01T00:00:00Z"}'
+```
+
+Expected response: `{"message":"Workflow was started"}`
+
+**Step 2 — Check N8N executions:**
+
+Navigate to N8N → **Overview → Executions** and confirm a new execution appeared with **Success** status.
+
+**Step 3 — Confirm Telegram delivery:**
+
+A formatted message from the Luna AI bot should appear in the configured Telegram group within a few seconds.
+
+**Step 4 — Trigger a real Wazuh event:**
+
+From any monitored host, make multiple failed SSH login attempts to another host:
+
+```bash
+ssh wronguser@MONITORED-HOST-IP
+```
+
+Repeat 5 times. Wazuh should detect the failed authentication attempts and fire a level 7+ alert that flows through the full pipeline automatically.
+
+---
+
+## 5. Operational Notes
+
+**Use internal LAN IP, not the public Cloudflare URL.**
+Wazuh POST requests to a Cloudflare-tunneled URL will be blocked by Cloudflare's WAF bot protection rules. The Wazuh integration sends automated HTTP requests that Cloudflare identifies as bot traffic and returns 403 Forbidden. Always use the direct internal IP and port for the N8N webhook URL.
+
+**Alert volume.**
+With the IF filter set to level 7+, typical homelab alert volume is 20-100 alerts per day depending on agent activity. Each alert consumes approximately 600 tokens via the Claude API. At this volume, API costs are under $5/month.
+
+**Model selection.**
+The pipeline uses `claude-sonnet-4-6`. This can be swapped for any Anthropic model by updating the `model` field in the HTTP Request node body. A cheaper alternative for high-volume environments is `claude-haiku-4-5-20251001`.
+
+**Disconnected agents.**
+Agents showing as Disconnected in Wazuh (`/var/ossec/bin/agent_control -l`) will not generate alerts. Reconnect them by restarting the `wazuh-agent` service on the affected host.
+
+**Real alerts.**
+Once the pipeline is live, real Wazuh detections from active agents will flow through automatically without any manual intervention. Common real-world alerts include netstat port changes, file integrity monitoring events, failed authentication attempts, and suspicious process activity.
 
 ![Wazuh](https://img.shields.io/badge/Wazuh-SIEM-blue?style=flat)
 ![N8N](https://img.shields.io/badge/N8N-Automation-orange?style=flat)
