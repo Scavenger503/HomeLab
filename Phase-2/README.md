@@ -22,6 +22,9 @@ HTTP Request (Claude API triage)
     ▼
 Telegram (Luna AI — formatted alert delivery)
 ```
+<img width="522" height="1073" alt="image" src="https://github.com/user-attachments/assets/3aa4daba-203d-4fcc-b46c-9e10883645cb" />
+<img width="624" height="1259" alt="image" src="https://github.com/user-attachments/assets/cbbd6e08-607c-42c3-9e48-9050715aa076" />
+
 
 ---
 
