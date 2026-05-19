@@ -4,6 +4,9 @@ An automated network security alerting pipeline that takes Ntopng threat detecti
 
 ---
 
+<img width="494" height="858" alt="image" src="https://github.com/user-attachments/assets/6a0349b3-3929-4eb2-976a-32888c877514" />
+
+
 ## Overview
 
 Ntopng monitors all network traffic on the LAN and fires alerts when it detects behavioral anomalies, blacklisted hosts, suspicious flows, or policy violations. This pipeline catches those alerts, passes them to Luna (Claude AI) for triage, and delivers actionable security reports directly to Telegram — automatically, 24/7.
