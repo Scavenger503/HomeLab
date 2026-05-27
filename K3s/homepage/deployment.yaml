@@ -2,14 +2,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    deployment.kubernetes.io/revision: "4"
+    deployment.kubernetes.io/revision: "5"
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"name":"homepage","namespace":"homepage"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"homepage"}},"template":{"metadata":{"labels":{"app":"homepage"}},"spec":{"containers":[{"env":[{"name":"HOMEPAGE_ALLOWED_HOSTS","value":"192.168.1.190:31271"}],"image":"ghcr.io/gethomepage/homepage:latest","name":"homepage","ports":[{"containerPort":3000}],"volumeMounts":[{"mountPath":"/app/config","name":"config"}]}],"volumes":[{"name":"config","persistentVolumeClaim":{"claimName":"homepage-config"}}]}}}}
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"name":"homepage","namespace":"homepage"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"homepage"}},"template":{"metadata":{"labels":{"app":"homepage"}},"spec":{"containers":[{"env":[{"name":"HOMEPAGE_ALLOWED_HOSTS","value":"<INTERNAL-IP>:31271"}],"image":"ghcr.io/gethomepage/homepage:latest","name":"homepage","ports":[{"containerPort":3000}],"volumeMounts":[{"mountPath":"/app/config","name":"config"}]}],"volumes":[{"name":"config","persistentVolumeClaim":{"claimName":"homepage-config"}}]}}}}
   creationTimestamp: "2026-05-27T04:54:44Z"
-  generation: 4
+  generation: 5
   name: homepage
   namespace: homepage
-  resourceVersion: "2663"
+  resourceVersion: "10950"
   uid: 68b3bc43-cca0-44bb-82d5-74c1f9aa0956
 spec:
   progressDeadlineSeconds: 600
@@ -31,7 +31,7 @@ spec:
       containers:
       - env:
         - name: HOMEPAGE_ALLOWED_HOSTS
-          value: 192.168.1.190:31271
+          value: homepage.k3s.scavenger
         image: ghcr.io/gethomepage/homepage:latest
         imagePullPolicy: Always
         name: homepage
@@ -70,12 +70,12 @@ status:
     status: "True"
     type: Available
   - lastTransitionTime: "2026-05-27T04:54:44Z"
-    lastUpdateTime: "2026-05-27T06:05:53Z"
-    message: ReplicaSet "homepage-5f9687cb65" has successfully progressed.
+    lastUpdateTime: "2026-05-27T13:38:17Z"
+    message: ReplicaSet "homepage-6ddd88b7cd" has successfully progressed.
     reason: NewReplicaSetAvailable
     status: "True"
     type: Progressing
-  observedGeneration: 4
+  observedGeneration: 5
   readyReplicas: 1
   replicas: 1
   terminatingReplicas: 0
