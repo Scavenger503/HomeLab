@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"name":"homepage","namespace":"homepage"},"spec":{"ports":[{"nodePort":31271,"port":3000,"targetPort":3000}],"selector":{"app":"homepage"},"type":"NodePort"}}
+  creationTimestamp: "2026-05-27T05:01:32Z"
+  name: homepage
+  namespace: homepage
+  resourceVersion: "1730"
+  uid: f7caeb0b-4a5a-404d-b640-45bf83731885
+spec:
+  clusterIP: 10.43.145.18
+  clusterIPs:
+  - 10.43.145.18
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - nodePort: 31271
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: homepage
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
