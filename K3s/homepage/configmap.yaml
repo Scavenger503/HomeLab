@@ -1,95 +1,58 @@
 apiVersion: v1
-items:
-- apiVersion: v1
-  data:
-    custom.css: |2
-
-      /* Section headers */
-      #page-container h1, #page-container h2, .service-group h2 {
-        color: #ff2020 !important;
-        font-family: monospace !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.1em !important;
-      }
-
-      /* Service cards */
-      .service {
-        background-color: rgba(0, 0, 0, 0.6) !important;
-        border: 1px solid #ff2020 !important;
-        border-radius: 4px !important;
-      }
-
-      /* Service card hover */
-      .service:hover {
-        border-color: #ff4444 !important;
-        box-shadow: 0 0 8px rgba(255, 32, 32, 0.4) !important;
-      }
-
-      /* Service name text */
-      .service-name {
-        color: #ffffff !important;
-        font-family: monospace !important;
-      }
-
-      /* Service description */
-      .service-description {
-        color: #aaaaaa !important;
-        font-family: monospace !important;
-      }
-
-      /* Response time pill (top right of card) */
-      .service-tag {
-        color: #ff2020 !important;
-        font-size: 0.7em !important;
-      }
-
-      /* Top stats bar */
-      #information-widgets {
-        color: #ffffff !important;
-        font-family: monospace !important;
-      }
-
-      /* Search bar */
-      #search-bar input {
-        background-color: rgba(0,0,0,0.7) !important;
-        border: 1px solid #ff2020 !important;
-        color: #ffffff !important;
-      }
-  kind: ConfigMap
-  metadata:
-    annotations:
-      kubectl.kubernetes.io/last-applied-configuration: |
-        {"apiVersion":"v1","data":{"custom.css":"\n/* Section headers */\n#page-container h1, #page-container h2, .service-group h2 {\n  color: #ff2020 !important;\n  font-family: monospace !important;\n  text-transform: uppercase !important;\n  letter-spacing: 0.1em !important;\n}\n\n/* Service cards */\n.service {\n  background-color: rgba(0, 0, 0, 0.6) !important;\n  border: 1px solid #ff2020 !important;\n  border-radius: 4px !important;\n}\n\n/* Service card hover */\n.service:hover {\n  border-color: #ff4444 !important;\n  box-shadow: 0 0 8px rgba(255, 32, 32, 0.4) !important;\n}\n\n/* Service name text */\n.service-name {\n  color: #ffffff !important;\n  font-family: monospace !important;\n}\n\n/* Service description */\n.service-description {\n  color: #aaaaaa !important;\n  font-family: monospace !important;\n}\n\n/* Response time pill (top right of card) */\n.service-tag {\n  color: #ff2020 !important;\n  font-size: 0.7em !important;\n}\n\n/* Top stats bar */\n#information-widgets {\n  color: #ffffff !important;\n  font-family: monospace !important;\n}\n\n/* Search bar */\n#search-bar input {\n  background-color: rgba(0,0,0,0.7) !important;\n  border: 1px solid #ff2020 !important;\n  color: #ffffff !important;\n}\n"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"homepage-custom-css","namespace":"homepage"}}
-    creationTimestamp: "2026-05-27T06:05:40Z"
-    name: homepage-custom-css
-    namespace: homepage
-    resourceVersion: "2622"
-    uid: 960af36a-b84e-4573-ac46-00cf26cb9edd
-- apiVersion: v1
-  data:
-    ca.crt: |
-      -----BEGIN CERTIFICATE-----
-      MIIBdjCCAR2gAwIBAgIBADAKBggqhkjOPQQDAjAjMSEwHwYDVQQDDBhrM3Mtc2Vy
-      dmVyLWNhQDE3Nzk4NTY0NzAwHhcNMjYwNTI3MDMzNDMwWhcNMzYwNTI0MDMzNDMw
-      WjAjMSEwHwYDVQQDDBhrM3Mtc2VydmVyLWNhQDE3Nzk4NTY0NzAwWTATBgcqhkjO
-      PQIBBggqhkjOPQMBBwNCAAR4ptBhnrxQk+oP01xjuEfYD4CnvhYQSJvxX6YLrnlE
-      voT/21TlRSyWLclw7DaLvdpKsMAmbjAYb8s9+hn+q7Zjo0IwQDAOBgNVHQ8BAf8E
-      BAMCAqQwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQU82rhk2HiLJ3nSib+rgcr
-      Y6CgO4UwCgYIKoZIzj0EAwIDRwAwRAIgbzCbQ2yrhQ+Lh4wdaR+unzgc+Kjo/Aga
-      hqODnV6C7+gCIDeSHF8d2zjuyniDYKW4FxAzaInOTxFvYBTMPrB7dJsU
-      -----END CERTIFICATE-----
-  kind: ConfigMap
-  metadata:
-    annotations:
-      kubernetes.io/description: Contains a CA bundle that can be used to verify the
-        kube-apiserver when using internal endpoints such as the internal service
-        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
-        of Kubernetes clusters.
-    creationTimestamp: "2026-05-27T04:44:29Z"
-    name: kube-root-ca.crt
-    namespace: homepage
-    resourceVersion: "894"
-    uid: 2cf4e718-7986-4b23-aa71-0cff6c397929
-kind: List
+kind: ConfigMap
 metadata:
-  resourceVersion: ""
+  name: homepage-custom-css
+  namespace: homepage
+data:
+  custom.css: |
+    /* Section headers */
+    #page-container h1, #page-container h2, .service-group h2 {
+      color: #ff2020 !important;
+      font-family: monospace !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.1em !important;
+    }
+
+    /* Service cards */
+    .service {
+      background-color: rgba(0, 0, 0, 0.6) !important;
+      border: 1px solid #ff2020 !important;
+      border-radius: 4px !important;
+    }
+
+    /* Service card hover */
+    .service:hover {
+      border-color: #ff4444 !important;
+      box-shadow: 0 0 8px rgba(255, 32, 32, 0.4) !important;
+    }
+
+    /* Service name text */
+    .service-name {
+      color: #ffffff !important;
+      font-family: monospace !important;
+    }
+
+    /* Service description */
+    .service-description {
+      color: #aaaaaa !important;
+      font-family: monospace !important;
+    }
+
+    /* Response time pill (top right of card) */
+    .service-tag {
+      color: #ff2020 !important;
+      font-size: 0.7em !important;
+    }
+
+    /* Top stats bar */
+    #information-widgets {
+      color: #ffffff !important;
+      font-family: monospace !important;
+    }
+
+    /* Search bar */
+    #search-bar input {
+      background-color: rgba(0,0,0,0.7) !important;
+      border: 1px solid #ff2020 !important;
+      color: #ffffff !important;
+    }
