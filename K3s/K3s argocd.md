@@ -22,6 +22,9 @@ ArgoCD applies the changes to the cluster
 Cluster state matches repository state
 ```
 
+<img width="1624" height="1308" alt="image" src="https://github.com/user-attachments/assets/e3961371-398f-4c2f-a715-594e91e91175" />
+
+
 ---
 
 ## Prerequisites
