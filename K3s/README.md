@@ -47,13 +47,13 @@ All services are accessible via local DNS only — no public exposure. External 
 
 ## Deployed Applications
 
-| Application | Namespace | Access URL | Managed By |
-|---|---|---|---|
-| Homepage | homepage | http://homepage.k3s.scavenger | ArgoCD |
-| ArgoCD | argocd | http://argocd.k3s.scavenger | Manual |
-| Grafana | monitoring | http://grafana.k3s.scavenger | ArgoCD |
-| Prometheus | monitoring | Internal only | ArgoCD |
-| Traefik Dashboard | kube-system | http://traefik.k3s.scavenger/dashboard/#/ | ArgoCD |
+| Application | Namespace | Local URL | Public URL | Managed By |
+|---|---|---|---|---|
+| Homepage | homepage | http://homepage.k3s.scavenger | https://k3s-homepage.scavenger.pro | ArgoCD |
+| ArgoCD | argocd | http://argocd.k3s.scavenger | https://k3s-argocd.scavenger.pro | Manual |
+| Grafana | monitoring | http://grafana.k3s.scavenger | https://k3s-grafana.scavenger.pro | ArgoCD |
+| Prometheus | monitoring | Internal only | — | ArgoCD |
+| Traefik Dashboard | kube-system | http://traefik.k3s.scavenger/dashboard/#/ | — | ArgoCD |
 
 ---
 
