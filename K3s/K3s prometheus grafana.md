@@ -19,6 +19,9 @@ The `kube-prometheus-stack` is a Helm chart that bundles the complete Kubernetes
 
 ---
 
+<img width="1624" height="1308" alt="image" src="https://github.com/user-attachments/assets/b7b34fdd-4c3b-428a-834d-7e695a5d20d8" />
+
+
 ## Prerequisites
 
 - K3s cluster running and healthy
