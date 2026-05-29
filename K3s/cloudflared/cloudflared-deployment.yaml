@@ -21,7 +21,7 @@ spec:
             - --no-autoupdate
             - run
             - --token
-            - eyJhIjoiOWY1NDU1NTAxODM5YzFlYjEzNzc2ODgyNGUyODg5YjUiLCJ0IjoiMWMyMzk5YzAtNjI2Zi00Njk0LTk5ZmEtMjNjMmE0MDIyZDUzIiwicyI6IlptVTJNR1V5TkdFdFpXRXlZeTAwWVdaakxUZzFZekl0WlRWaU5tWXpNelJoTW1KbCJ9
+            - YOUR_TUNNEL_TOKEN_HERE
           resources:
             requests:
               memory: "64Mi"
